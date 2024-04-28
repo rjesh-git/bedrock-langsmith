@@ -1,0 +1,4 @@
+aws-lambda-powertools[tracer]
+langchain-aws
+langchain==0.1.11
+langsmith==0.1.50

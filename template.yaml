@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  bedrock-langsmith-trace
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 128
+    Runtime: python3.12
+    LoggingConfig:
+      LogFormat: JSON
+  Api:
+    TracingEnabled: true
+Resources:
+  BedrockLangsmithFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      CodeUri: bedrock-lambda-handler/
+      Description: Bedrock Langsmith Trace Lambda
+      Architectures:
+      - x86_64
+      Tracing: Active
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: BedrockLangsmithFunction
+          POWERTOOLS_METRICS_NAMESPACE: BedrockLangsmithFunction
+          LOG_LEVEL: INFO
+          BEDROCK_REGION: us-west-2
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: 
+                - "bedrock:InvokeModel"
+              Resource: "*"
+      Tags:
+        LambdaPowertools: python
+
+Outputs:
+  BedrockLangsmithFunction:
+    Description: Bedrock Langsmith Trace Lambda ARN
+    Value: !GetAtt BedrockLangsmithFunction.Arn
+
