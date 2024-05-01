@@ -5,6 +5,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from aws_lambda_powertools import Logger
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda
+from langsmith import traceable
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-west-2")
 
@@ -13,6 +14,7 @@ bedrock_runtime_client = boto3.client("bedrock-runtime", region_name=BEDROCK_REG
 
 logger = Logger()
 
+# create prompt template
 PROMPT_TEMPLATE = """
 \n\n
 You are an expert redactor. The user is going to provide you with some text in <summary> XML tag.
@@ -29,7 +31,11 @@ Assistant:
 """
 
 
+@traceable(run_type="llm")
 def run_bedrock_inference(prompt, temperature=0, max_tokens=2000):
+    """
+    Run inference on Anthropic Claude model
+    """
 
     payload = {
         "modelId": "anthropic.claude-3-sonnet-20240229-v1:0",
@@ -63,6 +69,7 @@ def run_bedrock_inference(prompt, temperature=0, max_tokens=2000):
     return text_response["text"]
 
 
+@traceable
 def lambda_handler(event: dict, context: LambdaContext) -> dict:
     logger.info(event)
 
@@ -73,7 +80,7 @@ def lambda_handler(event: dict, context: LambdaContext) -> dict:
     inference_chain = claude_prompt | RunnableLambda(run_bedrock_inference)
 
     # run chain
-    response = inference_chain.invoke({"summary": event.summary})
+    response = inference_chain.invoke({"summary": event["summary"]})
 
     return {
         "statusCode": 200,

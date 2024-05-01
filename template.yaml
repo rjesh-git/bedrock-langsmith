@@ -6,12 +6,10 @@ Description: >
 Globals:
   Function:
     Timeout: 300
-    MemorySize: 128
+    MemorySize: 512
     Runtime: python3.12
     LoggingConfig:
       LogFormat: JSON
-  Api:
-    TracingEnabled: true
 Resources:
   BedrockLangsmithFunction:
     Type: AWS::Serverless::Function
@@ -28,6 +26,8 @@ Resources:
           POWERTOOLS_METRICS_NAMESPACE: BedrockLangsmithFunction
           LOG_LEVEL: INFO
           BEDROCK_REGION: us-west-2
+          LANGCHAIN_TRACING_V2: true
+          LANGCHAIN_API_KEY: ""
       Policies:
         - Version: '2012-10-17'
           Statement:
